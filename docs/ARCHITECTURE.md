@@ -71,7 +71,7 @@ document the component contract more clearly. Empty options such as
 `components: {}` or `data: () => ({})` should be avoided when they do not add
 behavior.
 
-UI events should avoid browser side effects. For example, links used as
+UI events should avoid browser-side effects. For example, links used as
 controls should use `@click.prevent` or be replaced with `button` elements when
 they do not represent real navigation.
 
