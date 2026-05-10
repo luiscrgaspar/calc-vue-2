@@ -420,4 +420,31 @@ describe("CalculatorLineContent", () => {
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted("handler4")).toBeTruthy();
   });
+
+  test("normalizes button classes and disabled states when metadata is shorter than icons", () => {
+    const wrapper = shallowMount(CalculatorLineContent, {
+      localVue,
+      i18n,
+      store,
+      propsData: {
+        icons: ["1", "2", "3", "+"],
+        disabledButtons: [true],
+        classButtons: ["calculator-content-line-equal-button"],
+      },
+    });
+
+    const buttons = wrapper.findAll("button");
+
+    expect(buttons.at(0).classes()).toContain(
+      "calculator-content-line-equal-button"
+    );
+    expect(buttons.at(0).attributes("disabled")).toBe("disabled");
+    expect(buttons.at(1).classes()).toContain(
+      "calculator-content-line-normal-button"
+    );
+    expect(buttons.at(1).attributes("disabled")).toBe(undefined);
+    expect(buttons.at(3).classes()).toContain(
+      "calculator-content-line-normal-button"
+    );
+  });
 });

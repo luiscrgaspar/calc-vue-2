@@ -6,6 +6,7 @@
     "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test": "vue-cli-service test:unit",
+    "test:coverage": "vue-cli-service test:unit --coverage --runInBand",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -30,11 +31,12 @@
     "babel-jest": "^27.0.6",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
-    "jest": "^30.0.3",
+    "jest": "^27.1.0",
     "sass": "^1.32.7",
     "sass-loader": "^12.0.0",
-    "ts-jest": "^29.4.6",
-    "typescript": "~4.5.5"
+    "ts-jest": "^27.1.5",
+    "typescript": "~4.5.5",
+    "vue-template-compiler": "^2.6.14"
   },
   "resolutions": {
     "cross-spawn": "^6.0.6",
