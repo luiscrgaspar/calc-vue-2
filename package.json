@@ -7,7 +7,9 @@
     "build": "vue-cli-service build",
     "test": "vue-cli-service test:unit",
     "test:coverage": "vue-cli-service test:unit --coverage --runInBand",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test:visual": "node scripts/run-visual-tests.cjs",
+    "test:visual:update": "node scripts/run-visual-tests.cjs --update-snapshots"
   },
   "dependencies": {
     "core-js": "^3.8.3",
@@ -16,6 +18,7 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
+    "@playwright/test": "1.59.1",
     "@types/jest": "^27.0.1",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
