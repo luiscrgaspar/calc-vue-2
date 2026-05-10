@@ -24,6 +24,13 @@ yarn lint
 yarn test --runInBand
 yarn test:coverage
 yarn build
+yarn test:visual
+```
+
+Refresh visual baselines intentionally:
+
+```bash
+yarn test:visual:update
 ```
 
 ## Development Guidelines
@@ -43,6 +50,7 @@ Choose the test level based on the risk of the change:
 - Components: rendering, events, props, i18n, and Vuex integration.
 - Services: math rules, formatting, errors, and edge cases.
 - Store: getters, mutations, and actions.
+- Playwright: browser rendering, screenshots, and cross-state visual regressions.
 
 When changing calculations, include success cases and at least one relevant
 edge or error case. When changing UI, validate observable behavior instead of

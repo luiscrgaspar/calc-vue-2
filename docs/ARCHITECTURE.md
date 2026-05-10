@@ -178,12 +178,15 @@ There are three main test levels:
 - Component tests, to validate rendering, events, i18n, and Vuex integration.
 - Service tests, to validate math rules and formatting in isolation.
 - Vuex module tests, to validate getters, mutations, and actions directly.
+- Playwright visual tests, to validate the rendered calculator shell and a few
+  important user-facing states in the browser.
 
 Test locations:
 
 - `src/components/**/__tests__` for component specs.
 - `src/services/__tests__` for pure service specs.
 - `src/store/modules/__tests__` for Vuex module specs.
+- `tests/visual` for browser-driven visual regression tests.
 
 Covered scenarios include:
 
@@ -204,6 +207,7 @@ yarn test --runInBand
 yarn test:coverage
 yarn lint
 yarn build
+yarn test:visual
 ```
 
 Notes:
@@ -228,6 +232,8 @@ Notes:
 - Use component tests to validate interaction and visual integration.
 - Use direct store tests to protect the contract of getters, mutations, and
   actions.
+- Use Playwright visual tests for the main calculator shell and the highest
+  value browser states.
 - Update this document when an architectural decision changes how the project
   evolves.
 
