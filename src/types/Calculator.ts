@@ -9,7 +9,8 @@ export type Operator = "+" | "-" | "*" | "/";
 export type CalculatorErrorKey =
   | "divided_by_zero"
   | "invalid_number_for_square_root"
-  | "invalid_number_for_cubic_root";
+  | "invalid_number_for_cubic_root"
+  | "invalid_factorial_input";
 
 export type CalculatorDisplayValue = string | number;
 

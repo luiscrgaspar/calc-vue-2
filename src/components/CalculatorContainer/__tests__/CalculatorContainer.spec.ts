@@ -763,6 +763,42 @@ describe("CalculatorContainer", () => {
     clearButton.trigger("click");
   });
 
+  test("when we click on negative number and on 'n!', shows error message", async () => {
+    const number8Button = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "8");
+    expect(number8Button.exists()).toBe(true);
+
+    number8Button.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("8");
+
+    const plusMinusButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "±");
+    expect(plusMinusButton.exists()).toBe(true);
+    plusMinusButton.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    const factorialButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "n!");
+    expect(factorialButton.exists()).toBe(true);
+
+    factorialButton.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    expect(resultText.text()).toBe("Invalid number for factorial");
+
+    const clearButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "C");
+    expect(clearButton.exists()).toBe(true);
+    clearButton.trigger("click");
+  });
+
   test("when we click on number, click on '1/x', shows the result", async () => {
     const number2Button = wrapper
       .findAll(".calculator-content-line-normal-button")

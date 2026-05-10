@@ -1,11 +1,11 @@
 <template>
   <div class="calculator-content-line">
     <button
-      :class="classButtons[index]"
+      :class="finalClassButtons[index]"
       v-for="(icon, index) in icons"
       :key="`prop_${index}`"
       @click="$emit(`handler${index + 1}`, Number.isInteger(+icon) ? icon : undefined )"
-      :disabled="disabledButtons[index]"
+      :disabled="finalDisabledButtons[index]"
     >
       {{ icon }}
     </button>
@@ -14,6 +14,12 @@
 <script lang="ts">
 import Vue from "vue";
 import { PropType } from "vue";
+
+const DEFAULT_BUTTON_CLASS = "calculator-content-line-normal-button";
+
+function normalizeList<T>(items: T[], length: number, fallback: T): T[] {
+  return Array.from({ length }, (_, index) => items[index] ?? fallback);
+}
 
 export default Vue.extend({
   name: "CalculatorLineContent",
@@ -34,6 +40,18 @@ export default Vue.extend({
         "calculator-content-line-normal-button",
         "calculator-content-line-normal-button",
       ],
+    },
+  },
+  computed: {
+    finalDisabledButtons(): boolean[] {
+      return normalizeList(this.disabledButtons, this.icons.length, false);
+    },
+    finalClassButtons(): string[] {
+      return normalizeList(
+        this.classButtons,
+        this.icons.length,
+        DEFAULT_BUTTON_CLASS
+      );
     },
   },
 });

@@ -196,6 +196,10 @@ export default Vue.extend({
           : formattedResult.value
       );
     },
+    setErrorCurrentValue(error: CalculatorErrorKey): void {
+      this.setError(error);
+      this.setCurrentValue(this.$t(error));
+    },
     clickOnXToThePowerOf2(): void {
       this.setFormattedCurrentValue(calculateSquare(+this.currentValue));
     },
@@ -231,7 +235,14 @@ export default Vue.extend({
       );
     },
     clickOnFactorial(): void {
-      this.setFormattedCurrentValue(calculateFactorial(+this.currentValue));
+      const result = calculateFactorial(+this.currentValue);
+
+      if (typeof result === "string") {
+        this.setErrorCurrentValue(result);
+        return;
+      }
+
+      this.setFormattedCurrentValue(result);
     },
     clickOnOneDividedByX(): void {
       this.setCurrentValue(
@@ -286,7 +297,7 @@ export default Vue.extend({
       }
     },
     clickOnEqualKey(): void {
-      if (Number.isInteger(+this.setCurrentValue)) return;
+      if (!this.currentOperator || Number.isNaN(+this.currentValue)) return;
 
       const currentValueNumber = +this.currentValue;
       const currentTemporaryValueNumber =

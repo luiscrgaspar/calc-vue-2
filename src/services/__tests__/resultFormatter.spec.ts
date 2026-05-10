@@ -33,6 +33,10 @@ describe("resultFormatter", () => {
       value: "infinity",
       isInfinity: true,
     });
+    expect(formatResult(-Infinity, "*")).toEqual({
+      value: "-infinity",
+      isInfinity: true,
+    });
   });
 
   test("formats root and reciprocal results", () => {

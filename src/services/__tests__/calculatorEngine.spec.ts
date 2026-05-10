@@ -15,8 +15,13 @@ describe("calculatorEngine", () => {
     expect(calculateCube(7)).toBe(343);
     expect(calculateSquareRoot(9)).toBe(3);
     expect(calculateCubicRoot(27)).toBe(3);
+    expect(calculateFactorial(0)).toBe(1);
     expect(calculateFactorial(5)).toBe(120);
     expect(calculateReciprocal(4)).toBe(0.25);
+  });
+
+  test("returns an error key for negative factorial input", () => {
+    expect(calculateFactorial(-1)).toBe("invalid_factorial_input");
   });
 
   test("calculates percentage only when an operator is active", () => {
@@ -38,6 +43,7 @@ describe("calculatorEngine", () => {
 
   test("returns an error key when dividing by zero", () => {
     expect(calculateBinaryOperation("/", 3, 0, false)).toBe("divided_by_zero");
+    expect(calculateBinaryOperation("/", 0, 5, true)).toBe("divided_by_zero");
   });
 
   test("returns zero for an unknown binary operator", () => {

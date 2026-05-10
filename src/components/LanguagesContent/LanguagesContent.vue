@@ -20,14 +20,18 @@ import { mapActions, mapGetters } from "vuex";
 export default Vue.extend({
   name: "LanguagesContent",
   computed: {
-    ...mapGetters(["languages", "error", "isInfinity"]),
+    ...mapGetters(["languages", "currentValue", "error", "isInfinity"]),
   },
   methods: {
     ...mapActions(["setCurrentLanguage", "setCurrentValue"]),
     changeLanguage(language: string): void {
       this.setCurrentLanguage(language);
       this.$i18n.locale = language;
-      if (this.isInfinity) this.setCurrentValue(this.$t("infinity"));
+      if (this.isInfinity) {
+        this.setCurrentValue(
+          this.$t(this.currentValue.startsWith("-") ? "-infinity" : "infinity")
+        );
+      }
       if (this.error !== "") this.setCurrentValue(this.$t(`${this.error}`));
     },
   },

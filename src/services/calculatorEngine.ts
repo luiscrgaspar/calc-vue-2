@@ -8,6 +8,7 @@ import { CalculatorErrorKey, Operator } from "@/types/Calculator";
 import { countDecimals, getMinDecimalPlaces } from "@/services/resultFormatter";
 
 export type BinaryOperationResult = number | CalculatorErrorKey;
+export type FactorialResult = number | CalculatorErrorKey;
 
 export function calculatePercentage(value: number, hasOperator: boolean): string {
   return hasOperator ? (value / 100).toString() : "0";
@@ -29,7 +30,9 @@ export function calculateCubicRoot(value: number): number {
   return Math.cbrt(value);
 }
 
-export function calculateFactorial(value: number): number {
+export function calculateFactorial(value: number): FactorialResult {
+  if (value < 0) return "invalid_factorial_input";
+
   let currentValue = value;
   let result = 1;
 
@@ -66,7 +69,10 @@ export function calculateBinaryOperation(
         Math.max(decimalsCurrentNumber, decimalsCurrentTemporaryNumber)
       );
     case DIVISION_OPERATOR: {
-      if (currentValue === 0) return "divided_by_zero";
+      const divisor = alreadyDoneEqualOperation
+        ? currentTemporaryValue
+        : currentValue;
+      if (divisor === 0) return "divided_by_zero";
 
       const result = !alreadyDoneEqualOperation
         ? currentTemporaryValue / currentValue

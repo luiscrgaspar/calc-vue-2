@@ -25,9 +25,9 @@ export function getMinDecimalPlaces(value: number): number {
 }
 
 export function formatResult(result: number, operator: Operator | ""): FormattedResult {
-  if (result === Infinity) {
+  if (!Number.isFinite(result)) {
     return {
-      value: "infinity",
+      value: result === Infinity ? "infinity" : "-infinity",
       isInfinity: true,
     };
   }
@@ -47,8 +47,8 @@ export function formatResult(result: number, operator: Operator | ""): Formatted
   return {
     value:
       totalNumberResult > MAX_RESULT_LENGTH
-        ? Number.parseFloat(result.toString()).toExponential(6)
-        : (+result).toString(),
+        ? result.toExponential(6)
+        : result.toString(),
     isInfinity: false,
   };
 }
