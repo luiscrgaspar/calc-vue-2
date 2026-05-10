@@ -10,6 +10,9 @@ module.exports = defineConfig({
   timeout: 30_000,
   expect: {
     timeout: 5_000,
+    toHaveScreenshot: {
+      pathTemplate: '{testDir}/{testFilePath}-snapshots/{projectName}/{arg}{ext}',
+    },
   },
   use: {
     baseURL: 'http://127.0.0.1:8080',

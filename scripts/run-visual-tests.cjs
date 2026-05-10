@@ -40,11 +40,19 @@ async function waitForServer(url, timeoutMs, serverProcess) {
   while (Date.now() - startedAt < timeoutMs) {
     if (failure) throw failure;
 
+    let timer;
     try {
-      const response = await fetch(url, { method: 'GET' });
+      const controller = new AbortController();
+      timer = setTimeout(() => controller.abort(), 2_000);
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+      });
       if (response.ok) return;
     } catch (error) {
       // Keep polling until the dev server comes up.
+    } finally {
+      if (timer) clearTimeout(timer);
     }
 
     await wait(250);
