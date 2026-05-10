@@ -173,7 +173,7 @@ files.
 
 ## Tests
 
-There are three main test levels:
+There are four main test levels:
 
 - Component tests, to validate rendering, events, i18n, and Vuex integration.
 - Service tests, to validate math rules and formatting in isolation.
@@ -213,8 +213,8 @@ yarn test:visual
 Notes:
 
 - `coverage/` is a generated Jest artifact and is ignored in `.gitignore`.
-- The expected current coverage is 100% for statements, lines, and functions,
-  with branch coverage above 95%.
+- Guideline: current coverage is expected to stay near 100% for statements,
+  lines, and functions, with branch coverage above 95%.
 
 ## Best Practices for Future Changes
 
@@ -262,8 +262,9 @@ Update this file when a change:
 - Adds a dependency that changes how the app is structured.
 
 It is not necessary to update this document for small layout changes, text
-changes, test coverage changes, or internal refactors that preserve the
-contracts described here.
+changes, or internal refactors that preserve the contracts described here.
+Coverage target changes should be treated as guidance updates rather than
+architecture changes.
 
 ## Suggested Next Steps
 
