@@ -103,6 +103,70 @@ describe("LanguagesContent", () => {
     expect(wrapper.vm.$i18n.locale).toBe("pt-PT");
   });
 
+  test("when isInfinity is true and language changes, updates current value to translated 'infinity'", async () => {
+    // Set infinity state
+    store.dispatch("setIsInfinity", true);
+    store.dispatch("setCurrentValue", "Infinity");
+    await wrapper.vm.$nextTick();
+
+    const calculatorLanguageES = wrapper.find(".calculator-language-ES");
+    expect(calculatorLanguageES.exists()).toBe(true);
+    calculatorLanguageES.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    // After switching to Spanish, currentValue should be "Infinito"
+    expect(store.getters.currentValue).toBe("Infinito");
+
+    // Reset for other tests
+    store.dispatch("setIsInfinity", false);
+    store.dispatch("setCurrentValue", "0");
+    store.dispatch("setCurrentLanguage", "en-US");
+    wrapper.vm.$i18n.locale = "en-US";
+    await wrapper.vm.$nextTick();
+  });
+
+  test("when error is set and language changes, updates current value to translated error", async () => {
+    store.dispatch("setError", "divided_by_zero");
+    store.dispatch("setCurrentValue", "Cannot divide by zero");
+    await wrapper.vm.$nextTick();
+
+    const calculatorLanguagePT = wrapper.find(".calculator-language-PT");
+    expect(calculatorLanguagePT.exists()).toBe(true);
+    calculatorLanguagePT.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    // After switching to Portuguese, currentValue should be translated
+    expect(store.getters.currentValue).toBe("Não é possível dividir por zero");
+
+    // Reset for other tests
+    store.dispatch("setError", "");
+    store.dispatch("setCurrentValue", "0");
+    store.dispatch("setCurrentLanguage", "en-US");
+    wrapper.vm.$i18n.locale = "en-US";
+    await wrapper.vm.$nextTick();
+  });
+
+  test("when neither isInfinity nor error is set, language change does not update current value", async () => {
+    store.dispatch("setIsInfinity", false);
+    store.dispatch("setError", "");
+    store.dispatch("setCurrentValue", "42");
+    await wrapper.vm.$nextTick();
+
+    const calculatorLanguageES = wrapper.find(".calculator-language-ES");
+    expect(calculatorLanguageES.exists()).toBe(true);
+    calculatorLanguageES.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    // currentValue should remain unchanged
+    expect(store.getters.currentValue).toBe("42");
+
+    // Reset
+    store.dispatch("setCurrentValue", "0");
+    store.dispatch("setCurrentLanguage", "en-US");
+    wrapper.vm.$i18n.locale = "en-US";
+    await wrapper.vm.$nextTick();
+  });
+
   test("when click on EN, change language to English", async () => {
     const calculatorLanguageES = wrapper.find(".calculator-language-ES");
     expect(calculatorLanguageES.exists()).toBe(true);

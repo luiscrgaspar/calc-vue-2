@@ -421,30 +421,98 @@ describe("CalculatorLineContent", () => {
     expect(wrapper.emitted("handler4")).toBeTruthy();
   });
 
-  test("normalizes button classes and disabled states when metadata is shorter than icons", () => {
+  test("renders buttons directly from classButtons prop without normalizing missing entries", () => {
     const wrapper = shallowMount(CalculatorLineContent, {
       localVue,
       i18n,
       store,
       propsData: {
         icons: ["1", "2", "3", "+"],
-        disabledButtons: [true],
-        classButtons: ["calculator-content-line-equal-button"],
+        classButtons: [
+          "calculator-content-line-equal-button",
+          "calculator-content-line-normal-button",
+          "calculator-content-line-normal-button",
+          "calculator-content-line-normal-button",
+        ],
       },
     });
 
     const buttons = wrapper.findAll("button");
+    expect(buttons.length).toBe(4);
+    expect(buttons.at(0).classes()).toContain("calculator-content-line-equal-button");
+    expect(buttons.at(1).classes()).toContain("calculator-content-line-normal-button");
+  });
 
-    expect(buttons.at(0).classes()).toContain(
-      "calculator-content-line-equal-button"
-    );
+  test("renders buttons directly from disabledButtons prop without normalizing", () => {
+    const wrapper = shallowMount(CalculatorLineContent, {
+      localVue,
+      i18n,
+      store,
+      propsData: {
+        icons: ["MC", "MR", "MS", "%"],
+        disabledButtons: [true, true, false, false],
+      },
+    });
+
+    const buttons = wrapper.findAll("button");
+    expect(buttons.length).toBe(4);
     expect(buttons.at(0).attributes("disabled")).toBe("disabled");
-    expect(buttons.at(1).classes()).toContain(
-      "calculator-content-line-normal-button"
-    );
-    expect(buttons.at(1).attributes("disabled")).toBe(undefined);
-    expect(buttons.at(3).classes()).toContain(
-      "calculator-content-line-normal-button"
-    );
+    expect(buttons.at(1).attributes("disabled")).toBe("disabled");
+    expect(buttons.at(2).attributes("disabled")).toBe(undefined);
+    expect(buttons.at(3).attributes("disabled")).toBe(undefined);
+  });
+
+  test("uses default classButtons of normal-button for all icons when classButtons prop is not provided", () => {
+    const wrapper = shallowMount(CalculatorLineContent, {
+      localVue,
+      i18n,
+      store,
+      propsData: {
+        icons: ["1", "2", "3", "+"],
+      },
+    });
+
+    const buttons = wrapper.findAll(".calculator-content-line-normal-button");
+    expect(buttons.length).toBe(4);
+  });
+
+  test("uses default disabledButtons of all-false when disabledButtons prop is not provided", () => {
+    const wrapper = shallowMount(CalculatorLineContent, {
+      localVue,
+      i18n,
+      store,
+      propsData: {
+        icons: ["7", "8", "9", "x"],
+      },
+    });
+
+    const buttons = wrapper.findAll("button");
+    buttons.wrappers.forEach((btn: any) => {
+      expect(btn.attributes("disabled")).toBe(undefined);
+    });
+  });
+
+  test("emits correct value for integer icon buttons (numeric payload)", async () => {
+    const wrapper = shallowMount(CalculatorLineContent, {
+      localVue,
+      i18n,
+      store,
+      propsData: {
+        icons: ["7", "8", "9", "x"],
+      },
+    });
+
+    const buttons = wrapper.findAll(".calculator-content-line-normal-button");
+
+    buttons.at(0).trigger("click");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("handler1")).toBeTruthy();
+    expect(wrapper.emitted("handler1")?.[0]).toEqual(["7"]);
+
+    buttons.at(3).trigger("click");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.emitted("handler4")).toBeTruthy();
+    // Non-integer icon emits undefined as payload
+    expect(wrapper.emitted("handler4")?.[0]).toEqual([undefined]);
   });
 });

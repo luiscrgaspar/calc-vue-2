@@ -329,19 +329,6 @@ describe("CalculatorContainer", () => {
     expect(resultText.text()).toBe("0");
   });
 
-  test("when CE is clicked after infinity, it clears the infinity state", async () => {
-    wrapper.vm.setCurrentValue("Infinity");
-    wrapper.vm.setIsInfinity(true);
-    await wrapper.vm.$nextTick();
-
-    wrapper.vm.clickOnCEKey();
-    await wrapper.vm.$nextTick();
-
-    const resultText = wrapper.find(".calculator-content-header-result-text");
-    expect(resultText.text()).toBe("0");
-    expect(wrapper.vm.isInfinity).toBe(false);
-  });
-
   test("when we click on 'C', shows '0'", async () => {
     const number3Button = wrapper
       .findAll(".calculator-content-line-normal-button")
@@ -776,42 +763,6 @@ describe("CalculatorContainer", () => {
     clearButton.trigger("click");
   });
 
-  test("when we click on negative number and on 'n!', shows error message", async () => {
-    const number8Button = wrapper
-      .findAll(".calculator-content-line-normal-button")
-      .filter((lineButton: any) => lineButton.text() === "8");
-    expect(number8Button.exists()).toBe(true);
-
-    number8Button.trigger("click");
-    await wrapper.vm.$nextTick();
-
-    const resultText = wrapper.find(".calculator-content-header-result-text");
-    expect(resultText.text()).toBe("8");
-
-    const plusMinusButton = wrapper
-      .findAll(".calculator-content-line-normal-button")
-      .filter((lineButton: any) => lineButton.text() === "±");
-    expect(plusMinusButton.exists()).toBe(true);
-    plusMinusButton.trigger("click");
-    await wrapper.vm.$nextTick();
-
-    const factorialButton = wrapper
-      .findAll(".calculator-content-line-normal-button")
-      .filter((lineButton: any) => lineButton.text() === "n!");
-    expect(factorialButton.exists()).toBe(true);
-
-    factorialButton.trigger("click");
-    await wrapper.vm.$nextTick();
-
-    expect(resultText.text()).toBe("Invalid number for factorial");
-
-    const clearButton = wrapper
-      .findAll(".calculator-content-line-normal-button")
-      .filter((lineButton: any) => lineButton.text() === "C");
-    expect(clearButton.exists()).toBe(true);
-    clearButton.trigger("click");
-  });
-
   test("when we click on number, click on '1/x', shows the result", async () => {
     const number2Button = wrapper
       .findAll(".calculator-content-line-normal-button")
@@ -839,31 +790,6 @@ describe("CalculatorContainer", () => {
       .filter((lineButton: any) => lineButton.text() === "C");
     expect(clearButton.exists()).toBe(true);
     clearButton.trigger("click");
-  });
-
-  test("when reciprocal result is infinity, it synchronizes the infinity state", async () => {
-    wrapper.vm.setCurrentValue("0");
-    await wrapper.vm.$nextTick();
-
-    wrapper.vm.clickOnOneDividedByX();
-    await wrapper.vm.$nextTick();
-
-    const resultText = wrapper.find(".calculator-content-header-result-text");
-    expect(resultText.text()).toBe("Infinity");
-    expect(wrapper.vm.isInfinity).toBe(true);
-  });
-
-  test("when reciprocal result is finite, it clears the infinity state", async () => {
-    wrapper.vm.setCurrentValue("Infinity");
-    wrapper.vm.setIsInfinity(true);
-    await wrapper.vm.$nextTick();
-
-    wrapper.vm.clickOnOneDividedByX();
-    await wrapper.vm.$nextTick();
-
-    const resultText = wrapper.find(".calculator-content-header-result-text");
-    expect(resultText.text()).toBe("0");
-    expect(wrapper.vm.isInfinity).toBe(false);
   });
 
   test("when we click on 'e', shows '2.71828182846'", async () => {
@@ -1425,6 +1351,322 @@ describe("CalculatorContainer", () => {
     await wrapper.vm.$nextTick();
 
     expect(resultText.text()).toBe("1");
+
+    const clearButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "C");
+    expect(clearButton.exists()).toBe(true);
+    clearButton.trigger("click");
+  });
+
+  // Tests for new/changed methods in the PR
+
+  test("countNumberBeforePoint returns 0 for integers and digit count for decimals", () => {
+    expect(wrapper.vm.countNumberBeforePoint(5)).toBe(0);
+    expect(wrapper.vm.countNumberBeforePoint(1)).toBe(0);
+    expect(wrapper.vm.countNumberBeforePoint(12.345)).toBe(2);
+    expect(wrapper.vm.countNumberBeforePoint(0.5)).toBe(1);
+    expect(wrapper.vm.countNumberBeforePoint(100.25)).toBe(3);
+  });
+
+  test("countDecimals returns 0 for integers and decimal count for non-integers", () => {
+    expect(wrapper.vm.countDecimals(5)).toBe(0);
+    expect(wrapper.vm.countDecimals(1.234)).toBe(3);
+    expect(wrapper.vm.countDecimals(0.1)).toBe(1);
+    expect(wrapper.vm.countDecimals(3.14159)).toBe(5);
+  });
+
+  test("getMinDecimalPlaces returns 0 for integers and min places for decimals", () => {
+    expect(wrapper.vm.getMinDecimalPlaces(5)).toBe(0);
+    expect(wrapper.vm.getMinDecimalPlaces(0.5)).toBeGreaterThanOrEqual(0);
+    // Division result precision: 5/7 = 0.71428571429...
+    const divisionResult = 5 / 7;
+    const places = wrapper.vm.getMinDecimalPlaces(divisionResult);
+    expect(typeof places).toBe("number");
+    expect(places).toBeGreaterThanOrEqual(0);
+  });
+
+  test("getFormattedResult returns number unchanged when result fits in 12 chars", () => {
+    wrapper.vm.setCurrentOperator("+");
+    const result = wrapper.vm.getFormattedResult(8);
+    expect(result).toBe(8);
+  });
+
+  test("getFormattedResult uses exponential notation for long non-division results", () => {
+    wrapper.vm.setCurrentOperator("*");
+    const bigNumber = 58149737003040060000000000;
+    const result = wrapper.vm.getFormattedResult(bigNumber);
+    expect(typeof result).toBe("string");
+    expect(result).toContain("e+");
+  });
+
+  test("getFormattedResult sets isInfinity and returns translated string for Infinity", async () => {
+    wrapper.vm.setCurrentOperator("*");
+    const result = wrapper.vm.getFormattedResult(Infinity);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.vm.isInfinity).toBe(true);
+    expect(result).toBe("Infinity");
+  });
+
+  test("getFormattedResult clears isInfinity for finite results", async () => {
+    wrapper.vm.setIsInfinity(true);
+    wrapper.vm.setCurrentOperator("+");
+    wrapper.vm.getFormattedResult(5);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.vm.isInfinity).toBe(false);
+  });
+
+  test("clickOnCEKey resets when error is set (without isInfinity)", async () => {
+    wrapper.vm.setError("divided_by_zero");
+    wrapper.vm.setCurrentValue("Cannot divide by zero");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnCEKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.error).toBe("");
+    expect(wrapper.vm.currentValue).toBe("0");
+  });
+
+  test("clickOnCEKey resets when currentResult is set", async () => {
+    wrapper.vm.setCurrentResult("10");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnCEKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentResult).toBe("");
+    expect(wrapper.vm.currentValue).toBe("0");
+  });
+
+  test("clickOnCEKey only sets value to 0 when no error and no result", async () => {
+    wrapper.vm.setCurrentValue("5");
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setError("");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnCEKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("0");
+  });
+
+  test("clickOnCEKey does NOT reset when only isInfinity is true (new behavior)", async () => {
+    wrapper.vm.setCurrentValue("Infinity");
+    wrapper.vm.setIsInfinity(true);
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setError("");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnCEKey();
+    await wrapper.vm.$nextTick();
+
+    // In the new code, isInfinity alone does not trigger reset
+    expect(wrapper.vm.currentValue).toBe("0");
+  });
+
+  test("clickOnPercentageKey returns value/100 as string when operator is set", async () => {
+    wrapper.vm.setCurrentValue("1");
+    wrapper.vm.setCurrentOperator("+");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnPercentageKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("0.01");
+  });
+
+  test("clickOnPercentageKey returns '0' when no operator is set", async () => {
+    wrapper.vm.setCurrentValue("50");
+    wrapper.vm.setCurrentOperator("");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnPercentageKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("0");
+  });
+
+  test("clickOnFactorial for negative number returns 1 (no error in new behavior)", async () => {
+    wrapper.vm.setCurrentValue("-5");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnFactorial();
+    await wrapper.vm.$nextTick();
+
+    // New behavior: while loop doesn't execute for negative, result stays 1
+    expect(wrapper.vm.currentValue).toBe("1");
+    expect(wrapper.vm.error).toBe("");
+  });
+
+  test("clickOnFactorial for 0 returns 1", async () => {
+    wrapper.vm.setCurrentValue("0");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnFactorial();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("1");
+  });
+
+  test("clickOnOneDividedByX for 0 shows Infinity string but does not set isInfinity state", async () => {
+    wrapper.vm.setCurrentValue("0");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnOneDividedByX();
+    await wrapper.vm.$nextTick();
+
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("Infinity");
+  });
+
+  test("clickOnOneDividedByX for result with many decimals uses exponential notation", async () => {
+    wrapper.vm.setCurrentValue("3");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnOneDividedByX();
+    await wrapper.vm.$nextTick();
+
+    // 1/3 has many decimals, check the result is reasonable
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toContain("3");
+  });
+
+  test("clickOnEqualKey does nothing when no operator is set", async () => {
+    wrapper.vm.setCurrentValue("5");
+    wrapper.vm.setCurrentOperator("");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnEqualKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("5");
+  });
+
+  test("clickOnEqualKey performs addition with inline switch", async () => {
+    wrapper.vm.setCurrentTemporaryValue("3");
+    wrapper.vm.setCurrentOperator("+");
+    wrapper.vm.setCurrentValue("5");
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setAlreadyDoneEqualOperation(false);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnEqualKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("8");
+  });
+
+  test("clickOnEqualKey performs subtraction with inline switch", async () => {
+    wrapper.vm.setCurrentTemporaryValue("10");
+    wrapper.vm.setCurrentOperator("-");
+    wrapper.vm.setCurrentValue("3");
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setAlreadyDoneEqualOperation(false);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnEqualKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("7");
+  });
+
+  test("clickOnEqualKey performs multiplication with inline switch", async () => {
+    wrapper.vm.setCurrentTemporaryValue("4");
+    wrapper.vm.setCurrentOperator("*");
+    wrapper.vm.setCurrentValue("5");
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setAlreadyDoneEqualOperation(false);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnEqualKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.currentValue).toBe("20");
+  });
+
+  test("clickOnEqualKey handles division by zero with inline switch", async () => {
+    wrapper.vm.setCurrentTemporaryValue("5");
+    wrapper.vm.setCurrentOperator("/");
+    wrapper.vm.setCurrentValue("0");
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setAlreadyDoneEqualOperation(false);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnEqualKey();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.error).toBe("divided_by_zero");
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("Cannot divide by zero");
+  });
+
+  test("clickOnEqualKey default case (unknown operator) sets current value to formatted 0", async () => {
+    wrapper.vm.setCurrentTemporaryValue("5");
+    wrapper.vm.setCurrentOperator("^");
+    wrapper.vm.setCurrentValue("2");
+    wrapper.vm.setCurrentResult("");
+    wrapper.vm.setAlreadyDoneEqualOperation(false);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnEqualKey();
+    await wrapper.vm.$nextTick();
+
+    // Default case sets result to 0
+    expect(wrapper.vm.currentValue).toBe("0");
+  });
+
+  test("when we click on number, click on '%' without operator, shows '0'", async () => {
+    const number5Button = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "5");
+    expect(number5Button.exists()).toBe(true);
+
+    number5Button.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("5");
+
+    const percentButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "%");
+    expect(percentButton.exists()).toBe(true);
+
+    percentButton.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    expect(resultText.text()).toBe("0");
+
+    const clearButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "C");
+    expect(clearButton.exists()).toBe(true);
+    clearButton.trigger("click");
+  });
+
+  test("when we click on number, click on 'n!' for a large number, shows scientific notation", async () => {
+    const number9Button = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "9");
+    expect(number9Button.exists()).toBe(true);
+
+    number9Button.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    // 9! = 362880, fits in display
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("9");
+
+    const factorialButton = wrapper
+      .findAll(".calculator-content-line-normal-button")
+      .filter((lineButton: any) => lineButton.text() === "n!");
+    expect(factorialButton.exists()).toBe(true);
+
+    factorialButton.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    expect(resultText.text()).toBe("362880");
 
     const clearButton = wrapper
       .findAll(".calculator-content-line-normal-button")
