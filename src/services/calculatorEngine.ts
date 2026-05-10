@@ -31,7 +31,7 @@ export function calculateCubicRoot(value: number): number {
 }
 
 export function calculateFactorial(value: number): FactorialResult {
-  if (value < 0) return "invalid_factorial_input";
+  if (value < 0 || !Number.isInteger(value)) return "invalid_factorial_input";
 
   let currentValue = value;
   let result = 1;

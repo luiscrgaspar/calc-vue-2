@@ -14,6 +14,7 @@ describe("resultFormatter", () => {
     expect(countDecimals(1)).toBe(0);
     expect(countDecimals(1.234)).toBe(3);
     expect(getMinDecimalPlaces(0.7142857142857143)).toBe(11);
+    expect(getMinDecimalPlaces(1234567890123.45)).toBe(0);
   });
 
   test("formats regular, long and division results", () => {

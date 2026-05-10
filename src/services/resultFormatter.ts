@@ -21,10 +21,19 @@ export function countDecimals(value: number): number {
 export function getMinDecimalPlaces(value: number): number {
   return countDecimals(value) === 0
     ? 0
-    : Math.min(MAX_RESULT_LENGTH - countNumberBeforePoint(value), value.toString().length);
+    : Math.max(
+        0,
+        Math.min(
+          MAX_RESULT_LENGTH - countNumberBeforePoint(value),
+          value.toString().length
+        )
+      );
 }
 
-export function formatResult(result: number, operator: Operator | ""): FormattedResult {
+export function formatResult(
+  result: number,
+  operator: Operator | ""
+): FormattedResult {
   if (!Number.isFinite(result)) {
     return {
       value: result === Infinity ? "infinity" : "-infinity",

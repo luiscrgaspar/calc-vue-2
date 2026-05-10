@@ -329,6 +329,19 @@ describe("CalculatorContainer", () => {
     expect(resultText.text()).toBe("0");
   });
 
+  test("when CE is clicked after infinity, it clears the infinity state", async () => {
+    wrapper.vm.setCurrentValue("Infinity");
+    wrapper.vm.setIsInfinity(true);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnCEKey();
+    await wrapper.vm.$nextTick();
+
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("0");
+    expect(wrapper.vm.isInfinity).toBe(false);
+  });
+
   test("when we click on 'C', shows '0'", async () => {
     const number3Button = wrapper
       .findAll(".calculator-content-line-normal-button")
@@ -826,6 +839,31 @@ describe("CalculatorContainer", () => {
       .filter((lineButton: any) => lineButton.text() === "C");
     expect(clearButton.exists()).toBe(true);
     clearButton.trigger("click");
+  });
+
+  test("when reciprocal result is infinity, it synchronizes the infinity state", async () => {
+    wrapper.vm.setCurrentValue("0");
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnOneDividedByX();
+    await wrapper.vm.$nextTick();
+
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("Infinity");
+    expect(wrapper.vm.isInfinity).toBe(true);
+  });
+
+  test("when reciprocal result is finite, it clears the infinity state", async () => {
+    wrapper.vm.setCurrentValue("Infinity");
+    wrapper.vm.setIsInfinity(true);
+    await wrapper.vm.$nextTick();
+
+    wrapper.vm.clickOnOneDividedByX();
+    await wrapper.vm.$nextTick();
+
+    const resultText = wrapper.find(".calculator-content-header-result-text");
+    expect(resultText.text()).toBe("0");
+    expect(wrapper.vm.isInfinity).toBe(false);
   });
 
   test("when we click on 'e', shows '2.71828182846'", async () => {

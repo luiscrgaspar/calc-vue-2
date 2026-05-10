@@ -20,8 +20,9 @@ describe("calculatorEngine", () => {
     expect(calculateReciprocal(4)).toBe(0.25);
   });
 
-  test("returns an error key for negative factorial input", () => {
+  test("returns an error key for invalid factorial input", () => {
     expect(calculateFactorial(-1)).toBe("invalid_factorial_input");
+    expect(calculateFactorial(3.5)).toBe("invalid_factorial_input");
   });
 
   test("calculates percentage only when an operator is active", () => {

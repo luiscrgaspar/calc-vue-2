@@ -162,7 +162,7 @@ export default Vue.extend({
       this.setCurrentValue(Math.PI.toFixed(11).toString());
     },
     clickOnCEKey(): void {
-      this.currentResult !== "" || this.error !== ""
+      this.currentResult !== "" || this.error !== "" || this.isInfinity
         ? this.reset()
         : this.setCurrentValue("0");
     },
@@ -245,9 +245,15 @@ export default Vue.extend({
       this.setFormattedCurrentValue(result);
     },
     clickOnOneDividedByX(): void {
-      this.setCurrentValue(
-        formatReciprocalResult(calculateReciprocal(+this.currentValue))
-      );
+      const result = calculateReciprocal(+this.currentValue);
+
+      if (!Number.isFinite(result)) {
+        this.setFormattedCurrentValue(result);
+        return;
+      }
+
+      this.setIsInfinity(false);
+      this.setCurrentValue(formatReciprocalResult(result));
     },
     clickOnEKey(): void {
       this.setCurrentValue(Math.E.toFixed(11).toString());
