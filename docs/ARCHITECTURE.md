@@ -1,145 +1,203 @@
-# Arquitetura e Boas Praticas
+# Architecture and Best Practices
 
-## Visao Geral
+## Overview
 
-Este projeto e uma calculadora cientifica simples construida com Vue 2,
-TypeScript, Vuex e vue-i18n. A aplicacao esta organizada em componentes Vue,
-estado global em Vuex, servicos puros para regras de calculo, constantes
-tipadas para configuracao da calculadora, traducoes em ficheiros JSON e testes
-unitarios.
+This project is a simple scientific calculator built with Vue 2, TypeScript,
+Vuex, and vue-i18n. The application is organized into Vue components, global
+state in Vuex, pure services for calculation rules, typed constants for
+calculator configuration, translations in JSON files, and unit tests.
 
-A arquitetura atual separa as responsabilidades principais:
+The current architecture separates the main responsibilities:
 
-- Componentes Vue tratam da apresentacao, eventos e ligacao ao estado.
-- Vuex guarda o estado da calculadora.
-- Servicos puros tratam da logica matematica e da formatacao de resultados.
-- Constantes centralizam operadores e linhas de botoes.
-- Tipos partilhados documentam o contrato entre componentes, store e servicos.
-- Testes unitarios cobrem componentes, servicos e o modulo Vuex.
+- Vue components handle presentation, events, and binding to state.
+- Vuex stores calculator state.
+- Pure services handle math logic and result formatting.
+- Constants centralize operators and button rows.
+- Shared types document the contract between components, store, and services.
+- Unit tests cover components, services, and the Vuex module.
 
-## Estrutura Atual
+## Data Flow
 
-- `src/main.ts` inicializa Vue, Vuex, vue-i18n e monta a aplicacao.
-- `src/App.vue` renderiza o `CalculatorContainer`.
-- `src/components/CalculatorContainer/CalculatorContainer.vue` coordena a
-  interface, handlers dos botoes, integracao com Vuex e chamadas aos servicos
-  de dominio.
-- `src/components/CalculatorLineContent/CalculatorLineContent.vue` renderiza
-  linhas reutilizaveis de botoes.
-- `src/components/HeaderContent/HeaderContent.vue` apresenta o titulo traduzido
-  e o valor atual.
-- `src/components/LanguagesContent/LanguagesContent.vue` permite trocar o
-  idioma ativo.
-- `src/store/index.ts` cria a store Vuex e regista o modulo da calculadora.
-- `src/store/modules/calculator.ts` guarda o estado da calculadora e expoe
-  getters, mutations e actions.
-- `src/services/calculatorEngine.ts` contem operacoes matematicas puras.
-- `src/services/resultFormatter.ts` contem regras de formatacao, arredondamento,
-  precisao e infinito.
-- `src/constants/calculatorButtons.ts` centraliza as linhas de botoes e classes
-  especiais.
-- `src/constants/calculatorOperators.ts` centraliza os operadores suportados.
-- `src/types/Calculator.ts` define tipos partilhados como `Operator`,
-  `CalculatorErrorKey`, `CalculatorDisplayValue` e `CalculatorState`.
-- `src/locales` contem as traducoes disponiveis.
-- `test-utils` contem helpers reutilizaveis para testes.
+The calculator's main flow should remain unidirectional and predictable:
 
-## Responsabilidades
+1. The user interacts with buttons or language controls.
+2. Components emit events or call local handlers.
+3. `CalculatorContainer.vue` interprets the UI intent.
+4. Calculations and formatting are delegated to pure services.
+5. Persistent calculator state is updated through Vuex actions/mutations.
+6. Components re-render from getters, state, and translations.
 
-### Componentes
+As a general rule, derived values should be calculated close to the layer that
+consumes them. The store should keep the minimum state needed to reconstruct
+the calculator, avoiding duplicated information that can drift out of sync.
 
-Os componentes devem continuar focados em apresentacao, props, eventos e
-integracao com Vuex. Devem evitar implementar regras matematicas ou regras de
-formatacao complexas.
+## Current Structure
 
-Props devem ser declaradas com `required`, `default` e `PropType` quando isso
-ajuda o TypeScript a documentar melhor o contrato do componente. Opcoes vazias
-como `components: {}` ou `data: () => ({})` devem ser evitadas quando nao
-acrescentam comportamento.
+- `src/main.ts` initializes Vue, Vuex, vue-i18n, and mounts the app.
+- `src/App.vue` renders `CalculatorContainer`.
+- `src/components/CalculatorContainer/CalculatorContainer.vue` coordinates the
+  interface, button handlers, Vuex integration, and domain service calls.
+- `src/components/CalculatorLineContent/CalculatorLineContent.vue` renders
+  reusable button rows.
+- `src/components/HeaderContent/HeaderContent.vue` shows the translated title
+  and current value.
+- `src/components/LanguagesContent/LanguagesContent.vue` lets the user change
+  the active language.
+- `src/store/index.ts` creates the Vuex store and registers the calculator
+  module.
+- `src/store/modules/calculator.ts` stores calculator state and exposes
+  getters, mutations, and actions.
+- `src/services/calculatorEngine.ts` contains pure math operations.
+- `src/services/resultFormatter.ts` contains formatting rules, rounding,
+  precision, and infinity handling.
+- `src/constants/calculatorButtons.ts` centralizes button rows and special
+  classes.
+- `src/constants/calculatorOperators.ts` centralizes supported operators.
+- `src/types/Calculator.ts` defines shared types such as `Operator`,
+  `CalculatorErrorKey`, `CalculatorDisplayValue`, and `CalculatorState`.
+- `src/locales` contains the available translations.
+- `test-utils` contains reusable helpers for tests.
 
-Eventos de UI devem evitar efeitos colaterais do browser. Por exemplo, links
-usados como controlos devem usar `@click.prevent` ou ser substituidos por
-`button` quando nao representam navegacao real.
+## Responsibilities
 
-`CalculatorContainer.vue` e o orquestrador principal da calculadora. Ele liga a
-UI ao estado, reage aos eventos dos botoes e delega calculos e formatacao para
-servicos puros.
+### Components
+
+Components should remain focused on presentation, props, events, and Vuex
+integration. They should avoid implementing math rules or complex formatting
+rules.
+
+Props should use `required`, `default`, and `PropType` when that helps TypeScript
+document the component contract more clearly. Empty options such as
+`components: {}` or `data: () => ({})` should be avoided when they do not add
+behavior.
+
+UI events should avoid browser side effects. For example, links used as
+controls should use `@click.prevent` or be replaced with `button` elements when
+they do not represent real navigation.
+
+`CalculatorContainer.vue` is the main orchestrator of the calculator. It ties
+the UI to state, reacts to button events, and delegates calculations and
+formatting to pure services.
+
+When adding a new component, prefer:
+
+- Small, explicit props.
+- Domain-oriented event names such as `select-operator` or `change-locale`.
+- Tests that validate observable behavior, not internal details.
+- Local styles when the visual rule belongs only to that component.
 
 ### Store
 
-O Vuex e a fonte de verdade para o estado da calculadora. Deve guardar dados
-como valor atual, valor temporario, memoria, operador, estado de erro, infinito
-e idioma ativo.
+Vuex is the source of truth for calculator state. It should store values such
+as the current value, temporary value, memory, operator, error state, infinity,
+and active language.
 
-Regras recomendadas:
+Recommended rules:
 
-- Mutations devem fazer alteracoes pequenas e previsiveis ao estado.
-- Actions devem continuar simples enquanto apenas encapsulam mutations.
-- Estado deve guardar chaves de erro, nao mensagens finais traduzidas.
-- Logica matematica complexa deve permanecer nos servicos.
-- Testes do modulo Vuex devem validar getters, mutations e actions sem montar
-  componentes.
+- Mutations should make small, predictable changes to state.
+- Actions should stay simple while they only wrap mutations.
+- State should store error keys, not final translated messages.
+- Complex math logic should remain in services.
+- Vuex module tests should validate getters, mutations, and actions without
+  mounting components.
 
-### Servicos
+Avoid letting the store know presentation details such as CSS classes, button
+row structure, or final translated text. Those decisions belong in components,
+constants, or i18n.
 
-Os servicos devem ser funcoes puras sempre que possivel.
+### Services
 
-- `calculatorEngine.ts` contem operacoes como soma, subtracao, multiplicacao,
-  divisao, raizes, potencias, factorial, percentagem e `1/x`.
-- `resultFormatter.ts` contem regras de precisao, notacao cientifica, casas
-  decimais e tratamento de infinito.
+Services should be pure functions whenever possible.
 
-Esses modulos devem ser faceis de testar sem Vue, Vuex ou i18n.
+- `calculatorEngine.ts` contains operations such as addition, subtraction,
+  multiplication, division, roots, powers, factorial, percentage, and `1/x`.
+- `resultFormatter.ts` contains rules for precision, scientific notation,
+  decimal places, and infinity handling.
 
-### Constantes
+These modules should be easy to test without Vue, Vuex, or i18n.
 
-Configuracao estatica deve viver em `src/constants`.
+Expected service contracts:
 
-- `calculatorButtons.ts` define as linhas de botoes exibidas pela calculadora.
-- `calculatorOperators.ts` define os operadores binarios suportados.
+- Receive primitive values or shared types.
+- Return predictable results for the same inputs.
+- Represent errors through keys or typed values, not translated messages.
+- Do not access the DOM, store, i18n, or components directly.
 
-Isto reduz strings magicas e facilita reorganizar a UI sem misturar
-configuracao com regras de calculo.
+### Constants
 
-### Internacionalizacao
+Static configuration should live in `src/constants`.
 
-As traducoes continuam centralizadas em `src/locales`.
+- `calculatorButtons.ts` defines the button rows shown by the calculator.
+- `calculatorOperators.ts` defines the supported binary operators.
 
-Boa pratica:
+This reduces magic strings and makes it easier to reorganize the UI without
+mixing configuration with calculation rules.
 
-- Guardar no estado apenas chaves de erro, como `divided_by_zero`.
-- Traduzir mensagens na camada de apresentacao/orquestracao.
-- Evitar guardar mensagens ja traduzidas como fonte de verdade permanente.
+### Internationalization
 
-## Testes
+Translations remain centralized in `src/locales`.
 
-Existem tres niveis principais de testes:
+Good practice:
 
-- Testes de componentes, para validar renderizacao, eventos, i18n e integracao
-  com Vuex.
-- Testes de servicos, para validar regras matematicas e formatacao em
-  isolamento.
-- Testes do modulo Vuex, para validar getters, mutations e actions diretamente.
+- Keep only error keys in state, such as `divided_by_zero`.
+- Translate messages in the presentation/orchestration layer.
+- Avoid storing already translated messages as the permanent source of truth.
 
-Localizacao dos testes:
+When adding a new visible string, update every file in `src/locales` in the same
+PR. This avoids silent regressions when the active language changes.
 
-- `src/components/**/__tests__` para specs de componentes.
-- `src/services/__tests__` para specs dos servicos puros.
-- `src/store/modules/__tests__` para specs do modulo Vuex.
+## Boundaries Between Layers
 
-Cenarios cobertos incluem:
+These boundaries help decide where to place new code:
 
-- Operacoes basicas: soma, subtracao, multiplicacao e divisao.
-- Divisao por zero.
-- Operacoes cientificas: potencias, raizes, factorial e `1/x`.
-- Percentagem.
-- Repeticao de `=`.
-- Memoria da calculadora.
-- Formatacao de resultados longos e infinito.
-- Troca de idioma para erros e infinito.
-- Getters, mutations e actions do store.
+- UI: layout, click events, accessibility, classes, and visual composition.
+- Store: minimal state, predictable mutations, simple actions, and getters.
+- Domain: math calculation, numeric validation, and value transformation.
+- Formatting: display rules, rounding, precision, and infinity.
+- i18n: final text shown to the user.
 
-Comandos uteis:
+If a change needs to touch multiple layers, the dependency should flow from the
+UI downward. Services should not import components, the store, or translation
+files.
+
+## Design Decisions
+
+- Vue 2 remains the project's base; new changes should follow the existing
+  Options API pattern used by the components.
+- Vuex remains the global state mechanism while the app is small and centered on
+  a single calculator.
+- Unit tests are preferred over end-to-end tests because most of the risk lives
+  in calculation rules, formatting, and light Vuex integration.
+- Generated artifacts such as `coverage/` and `dist/` are not part of the source
+  architecture and should not be versioned.
+
+## Tests
+
+There are three main test levels:
+
+- Component tests, to validate rendering, events, i18n, and Vuex integration.
+- Service tests, to validate math rules and formatting in isolation.
+- Vuex module tests, to validate getters, mutations, and actions directly.
+
+Test locations:
+
+- `src/components/**/__tests__` for component specs.
+- `src/services/__tests__` for pure service specs.
+- `src/store/modules/__tests__` for Vuex module specs.
+
+Covered scenarios include:
+
+- Basic operations: addition, subtraction, multiplication, and division.
+- Division by zero.
+- Scientific operations: powers, roots, factorial, and `1/x`.
+- Percentage.
+- Repeated `=`.
+- Calculator memory.
+- Formatting of long results and infinity.
+- Language switching for errors and infinity.
+- Store getters, mutations, and actions.
+
+Useful commands:
 
 ```bash
 yarn test --runInBand
@@ -148,56 +206,69 @@ yarn lint
 yarn build
 ```
 
-Notas:
+Notes:
 
-- `coverage/` e um artefacto gerado pelo Jest e esta ignorado no `.gitignore`.
-- A cobertura atual esperada fica em 100% para statements, lines e functions,
-  com branch coverage acima de 95%.
+- `coverage/` is a generated Jest artifact and is ignored in `.gitignore`.
+- The expected current coverage is 100% for statements, lines, and functions,
+  with branch coverage above 95%.
 
-## Boas Praticas Para Proximas Alteracoes
+## Best Practices for Future Changes
 
-- Separar UI, estado, dominio e i18n.
-- Preferir funcoes puras para regras matematicas.
-- Evitar strings magicas espalhadas pelo codigo.
-- Manter componentes pequenos e orientados a apresentacao.
-- Declarar props com tipos, defaults e obrigatoriedade explicitos.
-- Remover opcoes vazias de componentes quando nao forem necessarias.
-- Prevenir comportamento nativo indesejado em interacoes de UI, como
-  navegacao causada por `href="#"`.
-- Usar tipos partilhados quando um valor atravessa componentes, store e
-  servicos.
-- Guardar chaves de erro no estado, nao mensagens traduzidas.
-- Cobrir regras de negocio com testes unitarios independentes de Vue.
-- Usar testes de componente para validar interacao e integracao visual.
-- Usar testes diretos do store para proteger o contrato de getters, mutations e
+- Separate UI, state, domain, and i18n.
+- Prefer pure functions for math rules.
+- Avoid magic strings scattered through the codebase.
+- Keep components small and presentation-oriented.
+- Declare props with explicit types, defaults, and required flags.
+- Remove empty component options when they are not needed.
+- Prevent unwanted native behavior in UI interactions, such as navigation
+  caused by `href="#"`.
+- Use shared types when a value crosses components, store, and services.
+- Store error keys in state, not translated messages.
+- Cover business rules with unit tests that do not depend on Vue.
+- Use component tests to validate interaction and visual integration.
+- Use direct store tests to protect the contract of getters, mutations, and
   actions.
-- Atualizar este documento quando uma decisao arquitetural mudar a forma de
-  evoluir o projeto.
+- Update this document when an architectural decision changes how the project
+  evolves.
 
-## Criterios Para Novas Funcionalidades
+## Criteria for New Features
 
-Antes de adicionar uma nova funcionalidade, confirmar:
+Before adding a new feature, confirm:
 
-- A regra pertence a UI, ao estado ou ao dominio?
-- A funcionalidade pode ser expressa como funcao pura?
-- Existem tipos adequados para representar os novos valores?
-- As props e eventos novos tem contrato explicito e testavel?
-- A configuracao deve ficar em `src/constants`?
-- As mensagens para o utilizador precisam de traducao?
-- Ha testes unitarios para os casos principais e para os erros esperados?
-- O novo comportamento precisa de teste de componente, teste de servico, teste
-  do store ou uma combinacao deles?
+- Does the rule belong in the UI, the state, or the domain?
+- Can the feature be expressed as a pure function?
+- Are there suitable types to represent the new values?
+- Do the new props and events have an explicit, testable contract?
+- Should configuration live in `src/constants`?
+- Do the user-facing messages need translation?
+- Are there unit tests for the main cases and the expected errors?
+- Does the new behavior need a component test, a service test, a store test,
+  or a combination of them?
 
-## Proximos Passos Sugeridos
+## When to Update This Document
 
-1. Reduzir gradualmente a responsabilidade de orquestracao do
-   `CalculatorContainer.vue`, movendo fluxos mais complexos para actions ou
-   helpers dedicados se o componente voltar a crescer.
-2. Melhorar a tipagem dos helpers `mapActions` e `mapGetters`, que em Vue 2
-   continuam pouco expressivos para TypeScript.
-3. Rever se `currentResult` ainda e necessario ou se o display pode ser
-   simplificado usando apenas `currentValue` e estado derivado.
-4. Adicionar testes unitarios para casos limite adicionais, como factorial de
-   numeros nao inteiros, valores negativos e resultados muito grandes.
-5. Considerar uma convencao para nomes de eventos dos botoes, substituindo
-   `handler1`, `handler2`, etc. por eventos mais explicitos se a UI crescer.
+Update this file when a change:
+
+- Changes the main data flow.
+- Creates, removes, or renames a relevant layer.
+- Changes the contract between components, store, services, or i18n.
+- Introduces a new testing convention.
+- Adds a dependency that changes how the app is structured.
+
+It is not necessary to update this document for small layout changes, text
+changes, test coverage changes, or internal refactors that preserve the
+contracts described here.
+
+## Suggested Next Steps
+
+1. Gradually reduce the orchestration responsibility of
+   `CalculatorContainer.vue`, moving more complex flows into actions or
+   dedicated helpers if the component grows again.
+2. Improve the typing of the `mapActions` and `mapGetters` helpers, which in
+   Vue 2 are still not very expressive for TypeScript.
+3. Review whether `currentResult` is still necessary or whether the display can
+   be simplified using only `currentValue` and derived state.
+4. Add unit tests for additional edge cases, such as factorial of non-integer
+   numbers, negative values, and very large results.
+5. Consider a naming convention for button events, replacing `handler1`,
+   `handler2`, etc. with more explicit events if the UI grows.
