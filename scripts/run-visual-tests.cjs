@@ -16,10 +16,30 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForServer(url, timeoutMs) {
+async function waitForServer(url, timeoutMs, serverProcess) {
   const startedAt = Date.now();
+  let failure = null;
+
+  const handleFailure = (error) => {
+    if (!failure) {
+      failure = error;
+    }
+  };
+
+  serverProcess.once('error', handleFailure);
+  serverProcess.once('exit', (code, signal) => {
+    if (code === 0) return;
+
+    const details =
+      code !== null
+        ? `exit code ${code}`
+        : `signal ${signal || 'unknown'}`;
+    handleFailure(new Error(`Dev server exited before ready (${details})`));
+  });
 
   while (Date.now() - startedAt < timeoutMs) {
+    if (failure) throw failure;
+
     try {
       const response = await fetch(url, { method: 'GET' });
       if (response.ok) return;
@@ -62,7 +82,7 @@ async function main() {
   });
 
   try {
-    await waitForServer(SERVER_URL, 120_000);
+    await waitForServer(SERVER_URL, 120_000, server);
 
     const playwright = spawnProcess(
       process.execPath,
