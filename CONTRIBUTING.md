@@ -1,14 +1,72 @@
 # Contributing
 
+Thanks for contributing to this project. The priority is to keep the calculator
+simple, testable, and easy to review.
+
+## Local Setup
+
+Install dependencies:
+
+```bash
+yarn install
+```
+
+Run the app locally:
+
+```bash
+yarn start
+```
+
+Run common checks:
+
+```bash
+yarn lint
+yarn test --runInBand
+yarn test:coverage
+yarn build
+```
+
+## Development Guidelines
+
+- Keep changes small and focused on the goal of the PR.
+- Follow the separation described in `docs/ARCHITECTURE.md`.
+- Put mathematical and formatting rules in pure services.
+- Keep minimal state in Vuex and avoid translated messages in the store.
+- Update every file in `src/locales` when adding visible text.
+- Do not version generated artifacts such as `coverage/` and `dist/`.
+- Avoid refactors that are unrelated to the current fix or feature.
+
+## Testing Guidelines
+
+Choose the test level based on the risk of the change:
+
+- Components: rendering, events, props, i18n, and Vuex integration.
+- Services: math rules, formatting, errors, and edge cases.
+- Store: getters, mutations, and actions.
+
+When changing calculations, include success cases and at least one relevant
+edge or error case. When changing UI, validate observable behavior instead of
+implementation details.
+
 ## Pull Request Review Workflow
 
 Before merging a pull request, keep the branch in a reviewable state:
 
 - Run `yarn lint`.
 - Run `yarn test --runInBand`.
-- Run `yarn test:coverage` when the change affects logic, components, or store.
-- Run `yarn build` before merging changes that affect production code or config.
-- Keep generated artefacts such as `coverage/` and `dist/` out of commits.
+- Run `yarn test:coverage` when the change affects logic, components, or the
+  store.
+- Run `yarn build` before merging changes that affect production code or
+  configuration.
+- Keep generated artifacts such as `coverage/` and `dist/` out of commits.
+
+PRs should include:
+
+- A short description of the change.
+- The reason for the change.
+- The validation commands that were run.
+- Screenshots or notes when the UI changes.
+- Any known limitation or follow-up that should not block the PR.
 
 ## CodeRabbit Comments
 
@@ -28,7 +86,7 @@ Recommended handling:
 When asking Codex to handle CodeRabbit feedback, use:
 
 ```text
-verifica os comentarios do CodeRabbit e corrige/responde
+check the CodeRabbit comments and fix/respond to them
 ```
 
 Codex should then:
@@ -52,3 +110,11 @@ Document architecture decisions
 
 Avoid mixing unrelated refactors with bug fixes unless the refactor is required
 for the fix.
+
+## Branch Hygiene
+
+- Start from an up-to-date base branch before opening a PR.
+- Keep generated files out of the diff.
+- Prefer one topic per branch.
+- Re-run relevant validation after resolving review feedback.
+- If a review comment is intentionally skipped, explain why in the PR thread.
