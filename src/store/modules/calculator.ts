@@ -1,23 +1,19 @@
-import { Language } from "../../types/Calculator";
-
-interface IState {
-  languages: Language[];
-  currentValue: string;
-  currentTemporaryValue: string;
-  currentMemoryValue: string;
-  currentResult: string;
-  currentOperator: string;
-  goingToDoOperation: boolean;
-  isInfinity: boolean;
-  alreadyDoneEqualOperation: boolean;
-  error: string;
-}
+import {
+  CalculatorDisplayValue,
+  CalculatorErrorKey,
+  CalculatorState,
+  Language,
+  Operator,
+} from "../../types/Calculator";
 
 interface IContext {
-  commit: (action: string, payload: string | boolean) => void;
+  commit: (
+    action: string,
+    payload: string | boolean | CalculatorDisplayValue
+  ) => void;
 }
 
-const state: IState = {
+const state: CalculatorState = {
   languages: [
     {
       key: "en-US",
@@ -47,27 +43,27 @@ const state: IState = {
 };
 
 const getters = {
-  languages: (state: IState): Language[] => state.languages,
-  currentValue: (state: IState): string => state.currentValue,
-  currentTemporaryValue: (state: IState): string => state.currentTemporaryValue,
-  currentMemoryValue: (state: IState): string => state.currentMemoryValue,
-  currentOperator: (state: IState): string => state.currentOperator,
-  goingToDoOperation: (state: IState): boolean => state.goingToDoOperation,
-  currentResult: (state: IState): string => state.currentResult,
-  isInfinity: (state: IState): boolean => state.isInfinity,
-  alreadyDoneEqualOperation: (state: IState): boolean => state.alreadyDoneEqualOperation,
-  error: (state: IState): string => state.error,
+  languages: (state: CalculatorState): Language[] => state.languages,
+  currentValue: (state: CalculatorState): string => state.currentValue,
+  currentTemporaryValue: (state: CalculatorState): string => state.currentTemporaryValue,
+  currentMemoryValue: (state: CalculatorState): string => state.currentMemoryValue,
+  currentOperator: (state: CalculatorState): Operator | "" => state.currentOperator,
+  goingToDoOperation: (state: CalculatorState): boolean => state.goingToDoOperation,
+  currentResult: (state: CalculatorState): string => state.currentResult,
+  isInfinity: (state: CalculatorState): boolean => state.isInfinity,
+  alreadyDoneEqualOperation: (state: CalculatorState): boolean => state.alreadyDoneEqualOperation,
+  error: (state: CalculatorState): CalculatorErrorKey | "" => state.error,
 };
 
 const mutations = {
-  setCurrentLanguage(state: IState, payload: string): void {
+  setCurrentLanguage(state: CalculatorState, payload: string): void {
     const newLanguages: Language[] = [];
     state.languages.forEach((lang) => {
       newLanguages.push({ ...lang, active: lang.key === payload });
     });
     state.languages = [...newLanguages];
   },
-  addToCurrentValue(state: IState, payload: string): void {
+  addToCurrentValue(state: CalculatorState, payload: string): void {
     if (payload === "." && state.goingToDoOperation) {
       state.goingToDoOperation = false;
       state.currentValue = "0.";
@@ -82,31 +78,31 @@ const mutations = {
 
     if (state.goingToDoOperation) state.goingToDoOperation = false;
   },
-  setCurrentValue(state: IState, payload: string): void {
-    state.currentValue = payload;
+  setCurrentValue(state: CalculatorState, payload: CalculatorDisplayValue): void {
+    state.currentValue = payload.toString();
   },
-  setCurrentTemporaryValue(state: IState, payload: string): void {
-    state.currentTemporaryValue = payload;
+  setCurrentTemporaryValue(state: CalculatorState, payload: CalculatorDisplayValue): void {
+    state.currentTemporaryValue = payload.toString();
   },
-  setCurrentMemoryValue(state: IState, payload: string): void {
+  setCurrentMemoryValue(state: CalculatorState, payload: string): void {
     state.currentMemoryValue = payload;
   },
-  setCurrentOperator(state: IState, payload: string): void {
+  setCurrentOperator(state: CalculatorState, payload: Operator | ""): void {
     state.currentOperator = payload;
   },
-  setGoingToDoOperation(state: IState, payload: boolean): void {
+  setGoingToDoOperation(state: CalculatorState, payload: boolean): void {
     state.goingToDoOperation = payload;
   },
-  setCurrentResult(state: IState, payload: string): void {
+  setCurrentResult(state: CalculatorState, payload: string): void {
     state.currentResult = payload;
   },
-  setIsInfinity(state: IState, payload: boolean): void {
+  setIsInfinity(state: CalculatorState, payload: boolean): void {
     state.isInfinity = payload;
   },
-  setAlreadyDoneEqualOperation(state: IState, payload: boolean): void {
+  setAlreadyDoneEqualOperation(state: CalculatorState, payload: boolean): void {
     state.alreadyDoneEqualOperation = payload;
   },
-  setError(state: IState, payload: string): void {
+  setError(state: CalculatorState, payload: CalculatorErrorKey | ""): void {
     state.error = payload;
   },
 };
@@ -118,16 +114,16 @@ const actions = {
   addToCurrentValue(context: IContext, payload: string): void {
     context.commit("addToCurrentValue", payload);
   },
-  setCurrentValue(context: IContext, payload: string): void {
+  setCurrentValue(context: IContext, payload: CalculatorDisplayValue): void {
     context.commit("setCurrentValue", payload);
   },
-  setCurrentTemporaryValue(context: IContext, payload: string): void {
+  setCurrentTemporaryValue(context: IContext, payload: CalculatorDisplayValue): void {
     context.commit("setCurrentTemporaryValue", payload);
   },
   setCurrentMemoryValue(context: IContext, payload: string): void {
     context.commit("setCurrentMemoryValue", payload);
   },
-  setCurrentOperator(context: IContext, payload: string): void {
+  setCurrentOperator(context: IContext, payload: Operator | ""): void {
     context.commit("setCurrentOperator", payload);
   },
   setGoingToDoOperation(context: IContext, payload: boolean): void {
@@ -142,7 +138,7 @@ const actions = {
   setAlreadyDoneEqualOperation(context: IContext, payload: boolean): void {
     context.commit("setAlreadyDoneEqualOperation", payload);
   },
-  setError(context: IContext, payload: boolean): void {
+  setError(context: IContext, payload: CalculatorErrorKey | ""): void {
     context.commit("setError", payload);
   },
 };

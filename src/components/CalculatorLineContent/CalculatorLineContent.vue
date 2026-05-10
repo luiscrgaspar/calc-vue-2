@@ -13,18 +13,21 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
+import { PropType } from "vue";
 
 export default Vue.extend({
   name: "CalculatorLineContent",
   props: {
-    icons: Array as () => string[],
-    handlers: Array as () => string[],
+    icons: {
+      type: Array as PropType<string[]>,
+      required: true,
+    },
     disabledButtons: {
-      type: Array as () => boolean[],
+      type: Array as PropType<boolean[]>,
       default: () => [false, false, false, false],
     },
     classButtons: {
-      type: Array as () => string[],
+      type: Array as PropType<string[]>,
       default: () => [
         "calculator-content-line-normal-button",
         "calculator-content-line-normal-button",
@@ -32,10 +35,6 @@ export default Vue.extend({
         "calculator-content-line-normal-button",
       ],
     },
-  },
-  components: {},
-  data: () => {
-    return {};
   },
 });
 </script>

@@ -1,11 +1,6 @@
 <template>
-  <div
-    class="calculator-content-header"
-  >
-    <span
-      class="calculator-content-header-title"
-      >{{ $t("calculator") }}</span
-    >
+  <div class="calculator-content-header">
+    <span class="calculator-content-header-title">{{ $t("calculator") }}</span>
     <div class="calculator-content-header-result">
       <span
         :class="`calculator-content-header-result-text ${
@@ -23,13 +18,18 @@ import Vue from "vue";
 export default Vue.extend({
   name: "HeaderContent",
   props: {
-    currentValue: String,
-    currentResult: String,
-    error: String,
-  },
-  components: {},
-  data: () => {
-    return {};
+    currentValue: {
+      type: String,
+      required: true,
+    },
+    currentResult: {
+      type: String,
+      default: "",
+    },
+    error: {
+      type: String,
+      default: "",
+    },
   },
 });
 </script>

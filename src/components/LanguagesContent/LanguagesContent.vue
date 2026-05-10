@@ -7,7 +7,7 @@
         language.active ? 'calculator-language-active' : ''
       }`"
       href="#"
-      @click="changeLanguage(language.key)"
+      @click.prevent="changeLanguage(language.key)"
       >{{ language.label }}</a
     >
   </div>
@@ -19,18 +19,11 @@ import { mapActions, mapGetters } from "vuex";
 
 export default Vue.extend({
   name: "LanguagesContent",
-  components: {},
-  data: () => {
-    return {};
-  },
   computed: {
-    ...mapGetters(["languages","error","isInfinity"]),
+    ...mapGetters(["languages", "error", "isInfinity"]),
   },
   methods: {
-    ...mapActions([
-      "setCurrentLanguage",
-      "setCurrentValue",
-    ]),
+    ...mapActions(["setCurrentLanguage", "setCurrentValue"]),
     changeLanguage(language: string): void {
       this.setCurrentLanguage(language);
       this.$i18n.locale = language;
